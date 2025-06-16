@@ -22,6 +22,7 @@
           const div = document.createElement('div');
           const img = document.createElement('img');
           img.src = '/images/' + item.filename;
+          img.alt = item.prompt;
           const p = document.createElement('p');
           p.textContent = `${item.prompt} (${item.created_at})`;
           div.appendChild(img);
