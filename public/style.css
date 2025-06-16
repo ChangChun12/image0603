@@ -1,43 +1,43 @@
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #f0f0f0 0%, #dcdcdc 100%);
   margin: 0;
+  padding: 0;
 }
 
 .container {
-  background-color: #fff;
+  background-color: #ffffff;
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 400px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 90%;
+  margin: 40px auto;
   text-align: center;
 }
 
 textarea {
   width: 100%;
-  height: 100px;
+  height: 120px;
   margin-bottom: 10px;
   padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: 6px;
+  font-size: 16px;
 }
 
 button {
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: white;
+  padding: 10px 24px;
+  background-color: #007bff;
+  color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 16px;
 }
 
 button:hover {
-  background-color: #45a049;
+  background-color: #0056b3;
 }
 
 #imageContainer {
@@ -47,4 +47,26 @@ button:hover {
 #imageContainer img {
   max-width: 100%;
   border-radius: 8px;
+}
+
+.status {
+  margin-top: 10px;
+  color: #666;
+}
+
+#historyContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+#historyContainer img {
+  width: 100%;
+  border-radius: 6px;
+}
+
+#historyContainer p {
+  font-size: 14px;
+  color: #555;
 }
