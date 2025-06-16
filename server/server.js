@@ -3,6 +3,7 @@ const axios = require('axios');
 const path = require('path');
 const fs = require('fs').promises;
 const { execFileSync } = require('child_process');
+const crypto = require('crypto');
 
 const app = express();
 const port = process.env.PORT ||3000;
@@ -47,6 +48,29 @@ initDb();
 const imagesDir = path.join(__dirname, '../public/images');
 fs.mkdir(imagesDir, { recursive: true }).catch(() => {});
 
+const IMAGE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+async function cleanOldImages() {
+  try {
+    const files = await fs.readdir(imagesDir);
+    const now = Date.now();
+    for (const file of files) {
+      if (file === '.gitkeep') continue;
+      const filePath = path.join(imagesDir, file);
+      const stat = await fs.stat(filePath);
+      if (now - stat.mtimeMs > IMAGE_TTL_MS) {
+        await fs.unlink(filePath).catch(() => {});
+        runSql(`DELETE FROM history WHERE filename=${escapeSql(file)};`);
+      }
+    }
+  } catch (err) {
+    console.error('Error cleaning images:', err);
+  }
+}
+
+cleanOldImages();
+setInterval(cleanOldImages, 60 * 60 * 1000);
+
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 
@@ -62,7 +86,7 @@ app.post('/generate', async (req, res) => {
     });
 
     const imageBuffer = Buffer.from(response.data, 'binary');
-    const filename = `img-${Date.now()}.png`;
+    const filename = `${crypto.randomUUID()}.png`;
     const imagePath = path.join(imagesDir, filename);
     await fs.writeFile(imagePath, imageBuffer);
     addHistory(prompt, filename);
