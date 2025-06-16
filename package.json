@@ -1,7 +1,7 @@
 {
   "name": "imgen",
   "version": "1.0.0",
-  "main": "server/server.js",
+  "main": "index.js",
   "scripts": {
     "start": "node server/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
