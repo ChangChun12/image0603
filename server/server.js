@@ -6,7 +6,8 @@ const { execFileSync } = require('child_process');
 const crypto = require('crypto');
 
 const app = express();
-const port = process.env.PORT ||3000;
+const port = 3000;
+const API_KEY = process.env.API_KEY;
 
 const dbPath = path.join(__dirname, 'history.db');
 
@@ -48,6 +49,33 @@ initDb();
 const imagesDir = path.join(__dirname, '../public/images');
 fs.mkdir(imagesDir, { recursive: true }).catch(() => {});
 
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 5;
+const requests = new Map();
+
+function authenticate(req, res, next) {
+  if (!API_KEY) return next();
+  const key = req.headers['x-api-key'] || req.query.api_key;
+  if (key === API_KEY) return next();
+  res.status(401).json({ error: 'Unauthorized' });
+}
+
+function rateLimit(req, res, next) {
+  const id = (req.headers['x-api-key'] || req.ip) || 'anon';
+  const now = Date.now();
+  const info = requests.get(id) || { start: now, count: 0 };
+  if (now - info.start > RATE_LIMIT_WINDOW_MS) {
+    info.start = now;
+    info.count = 0;
+  }
+  info.count += 1;
+  requests.set(id, info);
+  if (info.count > MAX_REQUESTS_PER_WINDOW) {
+    return res.status(429).json({ error: 'Too many requests' });
+  }
+  next();
+}
+
 const IMAGE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 async function cleanOldImages() {
@@ -76,7 +104,7 @@ app.use(express.json());
 
 const API_URL = 'https://ai-image-api.xeven.workers.dev/img';
 
-app.post('/generate', async (req, res) => {
+app.post('/generate', authenticate, rateLimit, async (req, res) => {
   const { prompt } = req.body;
 
   try {
@@ -91,14 +119,14 @@ app.post('/generate', async (req, res) => {
     await fs.writeFile(imagePath, imageBuffer);
     addHistory(prompt, filename);
 
-    res.json({ imageUrl: '/images/' + filename' });
+    res.json({ imageUrl: '/images/' + filename });
   } catch (error) {
     console.error('Error generating image:', error);
     res.status(500).send('Failed to generate image');
   }
 });
 
-app.get('/history', (req, res) => {
+app.get('/history', authenticate, rateLimit, (req, res) => {
   try {
     const history = fetchHistory();
     res.json(history);
