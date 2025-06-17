@@ -147,6 +147,8 @@ try {
   console.error('Error calling Gemini API:', err?.response?.data || err);
   return '';
 }
+  
+}
 
 app.post('/generate', authenticate, rateLimit, async (req, res) => {
   const { prompt } = req.body;
