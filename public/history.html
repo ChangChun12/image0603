@@ -25,8 +25,11 @@
           img.alt = item.prompt;
           const p = document.createElement('p');
           p.textContent = `${item.prompt} (${item.created_at})`;
+          const storyP = document.createElement('p');
+          storyP.textContent = item.story || '';
           div.appendChild(img);
           div.appendChild(p);
+          if (item.story) div.appendChild(storyP);
           container.appendChild(div);
         });
       }
