@@ -38,3 +38,4 @@ async function generateStory(prompt) {
   const story = await generateStory(prompt);
   if (story) console.log(story);
 })();
+
