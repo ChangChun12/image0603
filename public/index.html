@@ -27,11 +27,11 @@
 
       status.textContent = '生成中...';
 
-      const response = await fetch('/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
-      });
+        const response = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt }),
+        });
 
       status.textContent = '';
 
@@ -39,8 +39,11 @@
         const data = await response.json();
         const img = document.createElement('img');
         img.src = data.imageUrl;
+          const storyP = document.createElement('p');
+          storyP.textContent = data.story || '';
         document.getElementById('imageContainer').innerHTML = '';
         document.getElementById('imageContainer').appendChild(img);
+        if (storyP.textContent) document.getElementById('imageContainer').appendChild(storyP);
       } else {
         alert('生成圖像失敗');
       }
