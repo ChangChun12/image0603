@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 圖像生成器</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>AI 圖像生成器</h1>
+    <textarea id="prompt" placeholder="輸入描述文字..."></textarea>
+    <button id="generateBtn">生成圖像</button>
+    <div id="status" class="status"></div>
+    <div id="imageContainer"></div>
+    <a href="history.html">查看歷史紀錄</a>
+  </div>
+
+  <script>
+    document.getElementById('generateBtn').addEventListener('click', async () => {
+      const prompt = document.getElementById('prompt').value;
+      const status = document.getElementById('status');
+      if (!prompt) {
+        alert('請輸入描述文字');
+        return;
+      }
+
+      status.textContent = '生成中...';
+
+        const response = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt }),
+        });
+
+      status.textContent = '';
+
+      if (response.ok) {
+        const data = await response.json();
+        const img = document.createElement('img');
+        img.src = data.imageUrl;
+          const storyP = document.createElement('p');
+          storyP.textContent = data.story || '';
+        document.getElementById('imageContainer').innerHTML = '';
+        document.getElementById('imageContainer').appendChild(img);
+        if (storyP.textContent) document.getElementById('imageContainer').appendChild(storyP);
+      } else {
+        alert('生成圖像失敗');
+      }
+    });
+  </script>
+</body>
+</html>

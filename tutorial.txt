@@ -1,0 +1,36 @@
+【完整教案：從零開始部署 PHP 專案到 Render 並開放 80 / 443】
+
+步驟一：註冊 GitHub 帳號
+1. 前往 https://github.com/ 註冊帳號。
+2. 建立新 repository，例如 php-docker-demo。
+
+步驟二：安裝 Git
+1. 前往 https://git-scm.com/ 下載並安裝 Git。
+2. 安裝完成後開啟 Git Bash，設定基本資訊：
+   git config --global user.name "你的名字"
+   git config --global user.email "你的Email"
+
+步驟三：推送 PHP 專案
+1. 解壓本專案後開啟 Git Bash，執行：
+   git init
+   git remote add origin https://github.com/你的帳號/php-docker-demo.git
+   git add .
+   git commit -m "first commit"
+   git branch -M main
+   git push -u origin main
+
+步驟四：申請 Render 帳號並部署
+1. 前往 https://render.com/ 註冊帳號並登入。
+2. 點選 "New Web Service"，選擇你剛上傳的 GitHub 專案。
+3. 設定如下：
+   - Environment: Docker
+   - Dockerfile Path: Dockerfile
+   - Build Command: 空白
+   - Start Command: 空白
+   - Free Plan
+4. 點選 "Create Web Service"
+
+步驟五：開啟 Port 80 和 443
+Render 會自動處理 SSL 憑證，且會自動開啟 80 / 443，你不需要額外設定防火牆。
+
+完成後你就可以透過 Render 提供的網址訪問你的 PHP 網站！
