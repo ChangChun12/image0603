@@ -115,27 +115,37 @@ app.use(express.json());
 const API_URL = 'https://ai-image-api.xeven.workers.dev/img';
 
 async function generateStory(prompt) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    // Fallback simple template if no API key is provided
-    return `這是一段關於「${prompt}」的短篇故事。`;
-  }
-  try {
-    const resp = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-3.5-turbo',
-      messages: [
-        { role: 'system', content: '根據提供的描述生成最多三十字的故事。' },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: 60,
-    }, {
-      headers: { 'Authorization': `Bearer ${apiKey}` }
-    });
-    return resp.data.choices[0].message.content.trim();
-  } catch (err) {
-    console.error('Error calling OpenAI API:', err);
-    return '';
-  }
+  const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+  // Fallback simple template if no API key is provided
+  return `這是一段關於「${prompt}」的短篇故事。`;
+}
+
+try {
+  const resp = await axios.post(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+    {
+      contents: [
+        {
+          parts: [
+            { text: `根據提供的描述生成最多三十字的故事。\n主題：「${prompt}」` }
+          ]
+        }
+      ]
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+
+  const candidates = resp.data.candidates;
+  const result = candidates?.[0]?.content?.parts?.[0]?.text || '';
+  return result.trim();
+} catch (err) {
+  console.error('Error calling Gemini API:', err?.response?.data || err);
+  return '';
 }
 
 app.post('/generate', authenticate, rateLimit, async (req, res) => {
