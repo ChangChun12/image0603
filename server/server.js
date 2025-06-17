@@ -117,49 +117,36 @@ const API_URL = 'https://ai-image-api.xeven.workers.dev/img';
 async function generateStory(prompt) {
   const apiKey = process.env.GEMINI_API_KEY;
 
-  async function generateShortStory(prompt) {
-    if (!apiKey) {
-      return `這是一段關於「${prompt}」的短篇故事。`;
-    }
-  
-    try {
-      const resp = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
-        {
-          contents: [
-            {
-              parts: [
-                {
-                  text: `請根據以下主題生成一段約 50 字的中文短篇故事。\n\n主題：「${prompt}」`
-                }
-              ]
-            }
-          ]
-        },
-        {
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-  
-      const candidates = resp.data?.candidates;
-      const story = candidates?.[0]?.content?.parts?.[0]?.text || '';
-      return story.trim();
-    } catch (err) {
-      console.error('Error calling Gemini API:', err?.response?.data || err);
-      return '';
-    }
+  if (!apiKey) {
+    return `這是一段關於「${prompt}」的短篇故事。`;
   }
 }
+try {
+    const resp = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+      {
+        contents: [
+          {
+            parts: [
+              {
+                text: `請根據以下主題生成一段約 50 字的中文短篇故事。\n\n主題：「${prompt}」`
+              }
+            ]
+          }
+        ]
+      },
+      {
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
 
-  const candidates = resp.data.candidates;
-  const result = candidates?.[0]?.content?.parts?.[0]?.text || '';
-  return result.trim();
-} catch (err) {
-  console.error('Error calling Gemini API:', err?.response?.data || err);
-  return '';
-}
-  
-}
+    const candidates = resp.data?.candidates;
+    const story = candidates?.[0]?.content?.parts?.[0]?.text || '';
+    return story.trim();
+  } catch (err) {
+    console.error('Error calling Gemini API:', err?.response?.data || err);
+    return '';
+  }
 
 app.post('/generate', authenticate, rateLimit, async (req, res) => {
   const { prompt } = req.body;
