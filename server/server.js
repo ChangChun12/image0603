@@ -27,20 +27,30 @@ function initDb() {
     `CREATE TABLE IF NOT EXISTS history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       prompt TEXT,
+      story TEXT,
       filename TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     );`
   );
+  try {
+    const info = JSON.parse(runSql('PRAGMA table_info(history);', true));
+    const cols = info.map(c => c.name);
+    if (!cols.includes('story')) {
+      runSql('ALTER TABLE history ADD COLUMN story TEXT;');
+    }
+  } catch (err) {
+    console.error('Error ensuring story column:', err);
+  }
 }
 
-function addHistory(prompt, filename) {
+function addHistory(prompt, story, filename) {
   runSql(
-    `INSERT INTO history (prompt, filename) VALUES (${escapeSql(prompt)}, ${escapeSql(filename)});`
+    `INSERT INTO history (prompt, story, filename) VALUES (${escapeSql(prompt)}, ${escapeSql(storyfilename) VALUES (${escapeSql(prompt)}, ${escapeSql(filename)});`
   );
 }
 
 function fetchHistory() {
-  const out = runSql('SELECT prompt, filename, created_at FROM history ORDER BY id DESC;', true);
+  const out = runSql('SELECT prompt, story, filename, created_at FROM history ORDER BY id DESC;', true);
   return out ? JSON.parse(out) : [];
 }
 
@@ -104,6 +114,30 @@ app.use(express.json());
 
 const API_URL = 'https://ai-image-api.xeven.workers.dev/img';
 
+async function generateStory(prompt) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    // Fallback simple template if no API key is provided
+    return `這是一段關於「${prompt}」的短篇故事。`;
+  }
+  try {
+    const resp = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: '根據提供的描述生成最多三十字的故事。' },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 60,
+    }, {
+      headers: { 'Authorization': `Bearer ${apiKey}` }
+    });
+    return resp.data.choices[0].message.content.trim();
+  } catch (err) {
+    console.error('Error calling OpenAI API:', err);
+    return '';
+  }
+}
+
 app.post('/generate', authenticate, rateLimit, async (req, res) => {
   const { prompt } = req.body;
 
@@ -117,9 +151,10 @@ app.post('/generate', authenticate, rateLimit, async (req, res) => {
     const filename = `${crypto.randomUUID()}.png`;
     const imagePath = path.join(imagesDir, filename);
     await fs.writeFile(imagePath, imageBuffer);
-    addHistory(prompt, filename);
+    const story = await generateStory(prompt);
+    addHistory(prompt, story, filename);
 
-    res.json({ imageUrl: '/images/' + filename });
+    res.json({ imageUrl: '/images/' + filename, story });
   } catch (error) {
     console.error('Error generating image:', error);
     res.status(500).send('Failed to generate image');
