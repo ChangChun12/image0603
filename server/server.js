@@ -45,7 +45,7 @@ function initDb() {
 
 function addHistory(prompt, story, filename) {
   runSql(
-    `INSERT INTO history (prompt, story, filename) VALUES (${escapeSql(prompt)}, ${escapeSql(storyfilename) VALUES (${escapeSql(prompt)}, ${escapeSql(filename)});`
+    `INSERT INTO history (prompt, story, filename) VALUES (${escapeSql(prompt)}, ${escapeSql(story)}, ${escapeSql(filename)});`
   );
 }
 
